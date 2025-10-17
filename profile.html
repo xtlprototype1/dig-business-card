@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Digital Business Card</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-white text-gray-900">
+  <div class="min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-xl shadow p-6">
+      <div id="profile" class="text-center">
+        <!-- Dynamic content populated by JS -->
+        <div class="mb-4"><img id="photo" class="w-28 h-28 rounded-full mx-auto object-cover" src="" alt="Profile"></div>
+        <h2 id="name" class="text-2xl font-bold">Loading…</h2>
+        <p id="title" class="text-sm text-gray-600">—</p>
+
+        <div id="contact" class="mt-4 space-y-2 text-left">
+          <!-- Phone / Email / Website inserted here -->
+        </div>
+
+        <div id="socials" class="mt-4 flex justify-center gap-3">
+          <!-- social icons -->
+        </div>
+
+        <div class="mt-6 flex gap-3 justify-center">
+          <button id="saveContact" class="px-4 py-2 rounded bg-blue-600 text-white">Save Contact</button>
+          <a id="editLink" class="px-4 py-2 rounded border text-gray-700" href="#">Edit</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="firebase.js"></script>
+  <script src="vcard.js"></script>
+  <script>
+    // profile.html: fetches user data by username query param and renders public card
+    const params = new URLSearchParams(location.search);
+    const username = params.get('u');
+
+    const nameEl = document.getElementById('name');
+    const titleEl = document.getElementById('title');
+    const photoEl = document.getElementById('photo');
+    const contactEl = document.getElementById('contact');
+    const socialsEl = document.getElementById('socials');
+    const editLink = document.getElementById('editLink');
+    const saveBtn = document.getElementById('saveContact');
+
+    if (!username){
+      nameEl.textContent = 'No profile specified';
+      titleEl.textContent = 'Add ?u=username to the URL';
+    } else {
+      // load from Firestore by username
+      const db = firebase.firestore();
+      const usersRef = db.collection('users');
+      usersRef.where('username','==',username).limit(1).get()
+        .then(snapshot=>{
+          if (snapshot.empty) {
+            nameEl.textContent = 'Profile not found';
+            titleEl.textContent = '';
+            return;
+          }
+          const doc = snapshot.docs[0];
+          const data = doc.data();
+          nameEl.textContent = data.name || '—';
+          titleEl.textContent = data.title || '';
+          photoEl.src = data.photoURL || 'https://via.placeholder.com/160';
+
+          // contact list
+          contactEl.innerHTML = '';
+          if (data.phone) contactEl.innerHTML += `<div>📞 <a href="tel:${data.phone}">${data.phone}</a></div>`;
+          if (data.email) contactEl.innerHTML += `<div>✉️ <a href="mailto:${data.email}">${data.email}</a></div>`;
+          if (data.website) contactEl.innerHTML += `<div>🌐 <a href="${data.website}" target="_blank" rel="noopener">${data.website}</a></div>`;
+
+          // socials
+          socialsEl.innerHTML = '';
+          if (data.socials){
+            Object.entries(data.socials).forEach(([k,v])=>{
+              if (!v) return;
+              const a = document.createElement('a');
+              a.href = v.startsWith('http') ? v : `https://${v}`;
+              a.target = '_blank';
+              a.rel = 'noopener';
+              a.className = 'text-gray-700';
+              a.textContent = k;
+              socialsEl.appendChild(a);
+            });
+          }
+
+          // edit link points to dashboard with login flow
+          editLink.href = `dashboard.html?u=${encodeURIComponent(username)}`;
+
+          // save vcard
+          saveBtn.addEventListener('click', ()=>{
+            const v = {
+              fn: data.name || '',
+              tel: data.phone || '',
+              email: data.email || '',
+              url: data.website || ''
+            };
+            const blob = generateVCF(v);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `${username}.vcf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+          });
+
+        }).catch(err=>{
+          console.error(err);
+          nameEl.textContent = 'Error loading profile';
+        });
+    }
+  </script>
+</body>
+</html>
