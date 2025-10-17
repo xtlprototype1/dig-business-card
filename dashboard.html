@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard — Edit Profile</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <div class="min-h-screen flex items-center justify-center p-6">
+    <div class="max-w-lg w-full bg-white rounded-xl shadow p-6">
+      <h2 class="text-xl font-semibold mb-4">Edit Your Digital Card</h2>
+
+      <div id="authArea">
+        <!-- Signup / Login UI -->
+        <div id="signedOut" class="space-y-3">
+          <input id="email" type="email" placeholder="Email" class="w-full p-2 border rounded" />
+          <input id="password" type="password" placeholder="Password" class="w-full p-2 border rounded" />
+          <div class="flex gap-2">
+            <button id="signupBtn" class="flex-1 p-2 rounded bg-green-600 text-white">Sign up</button>
+            <button id="loginBtn" class="flex-1 p-2 rounded border">Log in</button>
+          </div>
+        </div>
+
+        <div id="signedIn" style="display:none">
+          <div class="mb-4">Signed in as <span id="userEmail" class="font-medium"></span></div>
+          <button id="signOutBtn" class="px-3 py-2 rounded border">Sign out</button>
+        </div>
+      </div>
+
+      <form id="profileForm" class="mt-4 hidden space-y-3">
+        <input id="fullName" placeholder="Full name" class="w-full p-2 border rounded" />
+        <input id="jobTitle" placeholder="Title/Role" class="w-full p-2 border rounded" />
+        <input id="phone" placeholder="Phone" class="w-full p-2 border rounded" />
+        <input id="website" placeholder="Website (https://...)" class="w-full p-2 border rounded" />
+
+        <div>
+          <label class="block text-sm mb-1">Profile photo</label>
+          <input id="photoInput" type="file" accept="image/*" />
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Social Links (key => url)</label>
+          <div id="socialList" class="space-y-2"></div>
+          <button id="addSocial" type="button" class="mt-2 px-3 py-1 border rounded">Add social</button>
+        </div>
+
+        <div class="flex gap-2">
+          <button id="saveProfile" class="flex-1 p-2 rounded bg-blue-600 text-white">Save</button>
+          <button id="generateLink" class="flex-1 p-2 rounded border">Get My Link</button>
+        </div>
+
+        <div id="message" class="text-sm text-green-600 mt-2"></div>
+      </form>
+
+    </div>
+  </div>
+
+  <script src="firebase.js"></script>
+  <script>
+    // dashboard: sign up, login, verify email (6-digit), and edit profile logic
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    // elements
+    const emailIn = document.getElementById('email');
+    const passwordIn = document.getElementById('password');
+    const signupBtn = document.getElementById('signupBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const signedOut = document.getElementById('signe
