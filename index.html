@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MonKat1 NFC Redirect</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50 text-gray-900">
+<main class="min-h-screen flex items-center justify-center p-6">
+<div class="max-w-xl w-full text-center">
+<h1 class="text-2xl font-bold mb-4">MonKat1 — NFC Card</h1>
+<p class="mb-4">If you landed here by tapping an NFC card, we will redirect you to the user's public profile.</p>
+
+
+<div id="status" class="mb-6 text-sm text-gray-600">Redirecting...</div>
+
+
+<p class="text-xs text-gray-400">If the automatic redirect does not work, append <code>?u=username</code> to the URL (e.g. <code>?u=alexcarter</code>).</p>
+</div>
+</main>
+
+
+<script src="firebase.js"></script>
+<script>
+// index.html acts as a redirect handler used by NFC encoded URLs.
+// Expected NFC encoded URL pattern: https://MonKat1.github.io/nfc-card/?u=username
+
+
+(function(){
+const params = new URLSearchParams(location.search);
+const username = params.get('u');
+const fallbackDelay = 800; // ms
+
+
+const status = document.getElementById('status');
+
+
+if (username){
+status.textContent = `Opening profile: ${username}`;
+// direct to profile.html with username
+setTimeout(()=>{
+location.href = `profile.html?u=${encodeURIComponent(username)}`;
+}, fallbackDelay);
+} else {
+status.textContent = 'No username provided. Please add ?u=username to the URL.';
+}
+})();
+</script>
+</body>
+</html>
